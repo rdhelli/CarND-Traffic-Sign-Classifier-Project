@@ -46,11 +46,11 @@ The goals / steps of this project are the following:
 
 #### 1.1 Submission files
 
-* Ipython notebook with code
+* Ipython notebook with code: 
 [Ipython notebook](https://github.com/rdhelli/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.ipynb)
-* HTML output of the code
+* HTML output of the code: 
 [HTML output](https://github.com/rdhelli/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.html)
-* A writeup report (either pdf or markdown)
+* A writeup report (either pdf or markdown): 
 [this writeup report](https://github.com/rdhelli/CarND-Traffic-Sign-Classifier-Project/blob/master/writeup.md)
 
 ### 2. Dataset Exploration
@@ -101,29 +101,70 @@ As for preprocessing, I decided to apply histogram equalization. It converts the
 
 As a last step, I normalized the image data so that at any point, multiple sources and types of input information could be easily added to the model. Training with a higher range of variables is also discouraged because it increases the significance of computational errors.
 
-#### 3.2. Describe what your final model architecture looks like including model type, layers, layer sizes, connectivity, etc.) Consider including a diagram and/or table describing the final model.
+#### 3.2. Model Architecture
 
-My final model consisted of the following layers:
+My final model consisted of the following layers, with extending the LeNet architecture with some elements of the VGGNet architecture.
 
-| Layer         		|     Description	        					| 
+| Layer         		      |     Description	        					                 | 
 |:---------------------:|:---------------------------------------------:| 
-| Input         		| 32x32x3 RGB image   							| 
-| Convolution 3x3     	| 1x1 stride, same padding, outputs 32x32x64 	|
-| RELU					|												|
-| Max pooling	      	| 2x2 stride,  outputs 16x16x64 				|
-| Convolution 3x3	    | etc.      									|
-| Fully connected		| etc.        									|
-| Softmax				| etc.        									|
-|						|												|
-|						|												|
- 
+| Input         		      | 32×32×1 Grayscale image   							             |
+| **Layer 1**           |                                               |
+| Convolution 3×3       | 1×1 stride, same padding, outputs 32×32×64    |
+| RELU                  |                                               |
+| Max pooling           | 2×2, same padding, outputs 16×16×64           |
+| **Layer 2**           |                                               |
+| Convolution 3×3       | 1×1 stride, same padding, outputs 16×16×128   |
+| RELU                  |                                               |
+| Max pooling           | 2×2, same padding, outputs 8×8×128            |
+| **Layer 3**           |                                               |
+| Convolution 3×3       | 1×1 stride, same padding, outputs 8×8×256     |
+| RELU                  |                                               |
+| Dropout               |                                               |
+| **Layer 4**           |                                               |
+| Convolution 3×3       | 1×1 stride, same padding, outputs 8×8×256     |
+| RELU                  |                                               |
+| Max pooling           | 2×2, same padding, outputs 4×4×256            |
+| Dropout               |                                               |
+| **Layer 5**           |                                               |
+| Flatten               | outputs 4096                                  |
+| Fully connected	      | outputs 400                                   |
+| RELU                  |                                               |
+| Dropout               |                                               |
+| **Layer 6**           |                                               |
+| Fully connected       | outputs 200                                   |
+| RELU                  |                                               |
+| Dropout               |                                               |
+| **Layer 7** (output)  |                                               |
+| Fully connected       | outputs 43                                    |
+
+#### 3.3. Model Training
+
+To train the model, I used the AdamOptimizer, as a good alternative to the gradient descent optimizer. The default 0.001 learning rate was sufficient. Due to the additional layers and layer depths of the architecture overfitting needed to be avoided. I used L2 regularization with a regularization gain of 0.015 to avoid unnecessarily high weights and I have inserted several dropout layers with a 0.5 probability to keep calculated features. This has proved to be useful, as shown by the training and validation accuracies that had a much lower difference during training.
+
+A note on the number of parameters to train:
+
+| Layer        | number of parameters |
+|:------------:|:--------------------:|
+CONV1          | (3 * 3 * 1 + 1) * 64 = 640 parameters (0.02%)
+CONV2          | (3 * 3 * 64 + 1) * 128 = 73856 parameters (2.75%)
+CONV3          | (3 * 3 * 128 + 1) * 256 = 295168 parameters (10.98%)
+CONV4          | (3 * 3 * 256 + 1) * 256 = 590080 parameters (21.96%)
+FC1            | (4096 + 1) * 400 = 1638800 parameters (60.98%)
+FC2            | (400 + 1) * 200 = 80200 parameters (2.98%)
+FC3            | (200 + 1) * 43 = 8643 parameters (0.32%)
+**Altogether** | 2687387 parameters
+
+It can be concluded that the typical multilayered 3×3 structure of the VGGNet helped to keep the number of parameters to a sustainable amount, while providing enough depth on various feature levels. A critical choice in a convolutional model is often the connection of the last convolutional and the first fully connected layer. Without the maxpooling in between, the complexity would have increased to 3-4 times the current complexity.
 
 
-#### 3.3. Describe how you trained your model. The discussion can include the type of optimizer, the batch size, number of epochs and any hyperparameters such as learning rate.
+#### 3.4. Solution Approach
 
-To train the model, I used an ....
+"Describe the approach taken for finding a solution and getting the validation set accuracy to be at least 0.93. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem."
 
-#### 3.4. Describe the approach taken for finding a solution and getting the validation set accuracy to be at least 0.93. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem.
+The batch size of 256 made the training process fast enough with a gpu. I have trained the model for 20 epochs, in which the plateauing started around the 15th. I have saved the model with the highest validation accuracy of them.
+
+![alt text][image10]
+
 
 My final model results were:
 * training set accuracy of ?
