@@ -2,8 +2,6 @@
 
 ## Writeup
 
-### You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
-
 ---
 
 **Build a Traffic Sign Recognition Project**
@@ -19,68 +17,91 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/visualization.jpg "Visualization"
-[image2]: ./examples/grayscale.jpg "Grayscaling"
-[image3]: ./examples/random_noise.jpg "Random Noise"
-[image4]: ./examples/placeholder.png "Traffic Sign 1"
-[image5]: ./examples/placeholder.png "Traffic Sign 2"
-[image6]: ./examples/placeholder.png "Traffic Sign 3"
-[image7]: ./examples/placeholder.png "Traffic Sign 4"
-[image8]: ./examples/placeholder.png "Traffic Sign 5"
+[image1]: ./content/untitled00.png "Distribution of train data"
+[image2]: ./content/untitled01.png "Examples of train data"
+[image3]: ./content/untitled02.png "Distribution of validation data"
+[image4]: ./content/untitled03.png "Examples of validation data"
+[image5]: ./content/untitled04.png "Distribution of test data"
+[image6]: ./content/untitled05.png "Examples of test data"
+[image7]: ./content/untitled06.png "Image augmentation"
+[image8]: ./content/untitled07.png "Distribution after augmentation"
+[image9]: ./content/untitled08.png "Preprocessing"
+[image10]: ./content/untitled09.png "Training curve"
+[image11]: ./content/untitled10.png "Internet images"
+[image12]: ./content/untitled11.png "Internet images preprocessed"
+[image13]: ./content/untitled12.png "Top5: 20km/h speed limit"
+[image14]: ./content/untitled13.png "Top5: yield"
+[image15]: ./content/untitled14.png "Top5: pedestrians"
+[image16]: ./content/untitled15.png "Top5: end of 80km/h speed limit"
+[image17]: ./content/untitled16.png "Top5: 120km/h speed limit"
+[image18]: ./content/untitled17.png "Layer 1 visualization"
+[image19]: ./content/untitled18.png "Layer 2 visualization"
+[image20]: ./content/untitled19.png "Layer 3 visualization"
 
 ## Rubric Points
 ### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.  
 
 ---
-### Writeup / README
+### 1. Files submitted
 
-#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one. You can submit your writeup as markdown or pdf. You can use this template as a guide for writing the report. The submission includes the project code.
+#### 1.1 Submission files
 
-You're reading it! and here is a link to my [project code](https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.ipynb)
+* Ipython notebook with code
+[Ipython notebook](https://github.com/rdhelli/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.ipynb)
+* HTML output of the code
+[HTML output](https://github.com/rdhelli/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.html)
+* A writeup report (either pdf or markdown)
+[this writeup report](https://github.com/rdhelli/CarND-Traffic-Sign-Classifier-Project/blob/master/writeup.md)
 
-### Data Set Summary & Exploration
+### 2. Dataset Exploration
 
-#### 1. Provide a basic summary of the data set. In the code, the analysis should be done using python, numpy and/or pandas methods rather than hardcoding results manually.
+#### 2.1 Dataset Summary
 
-I used the pandas library to calculate summary statistics of the traffic
+I used the numpy library to calculate summary statistics of the traffic
 signs data set:
 
-* The size of training set is ?
-* The size of the validation set is ?
-* The size of test set is ?
-* The shape of a traffic sign image is ?
-* The number of unique classes/labels in the data set is ?
+* The size of training set is 34799
+* The size of the validation set is 4410
+* The size of test set is 12630
+* The shape of a traffic sign image is (32, 32, 3)
+* The number of unique classes/labels in the data set is 43
 
-#### 2. Include an exploratory visualization of the dataset.
+#### 2.2 Exploratory Visualization
 
-Here is an exploratory visualization of the data set. It is a bar chart showing how the data ...
+Here is an exploratory visualization of the data set. It is a bar chart showing how the data is distributed among the 43 image classes.
 
 ![alt text][image1]
 
-### Design and Test a Model Architecture
+What I have learned is that the underrepresented classes with training data lower than about 1000 images need special attention or else the model will predict images of those classes with a fairly low accuracy. 
 
-#### 1. Describe how you preprocessed the image data. What techniques were chosen and why did you choose these techniques? Consider including images showing the output of each preprocessing technique. Pre-processing refers to techniques such as converting to grayscale, normalization, etc. (OPTIONAL: As described in the "Stand Out Suggestions" part of the rubric, if you generated additional data for training, describe why you decided to generate additional data, how you generated the data, and provide example images of the additional data. Then describe the characteristics of the augmented training set like number of images in the set, number of images for each class, etc.)
-
-As a first step, I decided to convert the images to grayscale because ...
-
-Here is an example of a traffic sign image before and after grayscaling.
+Here are example images from the training data.
 
 ![alt text][image2]
 
-As a last step, I normalized the image data because ...
+The validation set and the test set distributions follow a similar pattern and similar examples.
 
-I decided to generate additional data because ... 
+### 3 Design and Test a Model Architecture
 
-To add more data to the the data set, I used the following techniques because ... 
+#### 3.1. Preprocessing
 
-Here is an example of an original image and an augmented image:
+Since the above mentioned distribution leads to problems, I decided to augment the dataset. The augmented data was generated from only those classes that were underrepresented, by rotating, shifting, shearing and zooming into the images. For this process I used the built-in data generator of keras.
 
-![alt text][image3]
+![alt text][image7]
 
-The difference between the original data set and the augmented data set is the following ... 
+As seen on the bar graph, the distribution of images is much more even after my augmentation.
 
+* The size of the augmentation set is 28738
+* The size of the augmented training set is thus 63537
 
-#### 2. Describe what your final model architecture looks like including model type, layers, layer sizes, connectivity, etc.) Consider including a diagram and/or table describing the final model.
+![alt text][image8]
+
+As for preprocessing, I decided to apply histogram equalization. It converts the image into grayscale, but the classification depends mostly on the shapes of the images. The histogram equalization unfolds the local differences in intensity, helping the network to identify the edges and shapes more easily.
+
+![alt text][image9]
+
+As a last step, I normalized the image data so that at any point, multiple sources and types of input information could be easily added to the model. Training with a higher range of variables is also discouraged because it increases the significance of computational errors.
+
+#### 3.2. Describe what your final model architecture looks like including model type, layers, layer sizes, connectivity, etc.) Consider including a diagram and/or table describing the final model.
 
 My final model consisted of the following layers:
 
@@ -98,11 +119,11 @@ My final model consisted of the following layers:
  
 
 
-#### 3. Describe how you trained your model. The discussion can include the type of optimizer, the batch size, number of epochs and any hyperparameters such as learning rate.
+#### 3.3. Describe how you trained your model. The discussion can include the type of optimizer, the batch size, number of epochs and any hyperparameters such as learning rate.
 
 To train the model, I used an ....
 
-#### 4. Describe the approach taken for finding a solution and getting the validation set accuracy to be at least 0.93. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem.
+#### 3.4. Describe the approach taken for finding a solution and getting the validation set accuracy to be at least 0.93. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem.
 
 My final model results were:
 * training set accuracy of ?
