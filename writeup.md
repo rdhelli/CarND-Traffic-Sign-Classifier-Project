@@ -156,78 +156,131 @@ FC3            | (200 + 1) * 43 = 8643 parameters (0.32%)
 
 It can be concluded that the typical multilayered 3×3 structure of the VGGNet helped to keep the number of parameters to a sustainable amount, while providing enough depth on various feature levels. A critical choice in a convolutional model is often the connection of the last convolutional and the first fully connected layer. Without the maxpooling in between, the complexity would have increased to 3-4 times the current complexity.
 
-
-#### 3.4. Solution Approach
-
-"Describe the approach taken for finding a solution and getting the validation set accuracy to be at least 0.93. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem."
-
 The batch size of 256 made the training process fast enough with a gpu. I have trained the model for 20 epochs, in which the plateauing started around the 15th. I have saved the model with the highest validation accuracy of them.
 
 ![alt text][image10]
 
+#### 3.4. Solution Approach
 
 My final model results were:
-* training set accuracy of ?
-* validation set accuracy of ? 
-* test set accuracy of ?
+* training set accuracy of 0.972
+* validation set accuracy of 0.974
+* test set accuracy of 0.933
 
-If an iterative approach was chosen:
-* What was the first architecture that was tried and why was it chosen?
-* What were some problems with the initial architecture?
-* How was the architecture adjusted and why was it adjusted? Typical adjustments could include choosing a different model architecture, adding or taking away layers (pooling, dropout, convolution, etc), using an activation function or changing the activation function. One common justification for adjusting an architecture would be due to overfitting or underfitting. A high accuracy on the training set but low accuracy on the validation set indicates over fitting; a low accuracy on both sets indicates under fitting.
-* Which parameters were tuned? How were they adjusted and why?
-* What are some of the important design choices and why were they chosen? For example, why might a convolution layer work well with this problem? How might a dropout layer help with creating a successful model?
+An iterative approach was chosen:
+* The first architecture was the LeNet-5 type architecture, which is a good starting point for classifying images containing shapes, symbols and letters.
+* No matter the hyperparameters, the LeNet-t architecture just did not suffice for me. My understanding is that the complexity of traffic sign shapes requires greater depths, but that did not seem to improve the model enough, more layers were needed.
+* Instead of just throwing in layer after layer and turning the knobs blindly, I did some research of various available architectures. I ended up with an architecture corresponding to VGGnet's structure, due to its similar building blocks, simplicity and its proven success in classifying images. The changing to uniform 3×3 filters in all convolutional layers brought a breakthrough in accuracy.
+* I scaled the original model down to match the current problem (lower resolution pictures), by removing layers. At first, the architecture showed signs of overfitting (high training accuracy and low validation accuracy), but I have managed to address the problem by inserting several dropout layers and adding L2 regularization.
+* I have experimented with the hyperparameters over the iterations, but the default values did well themselves. Tried more epochs but mostly it only caused more overfitting. For the data augmentation, I have ended up with the parameters according to the visual feedback - these amounts seemed natural and justified in comparison with the original dataset.
+* Regarding the preprocessing, histogram equalization turned out to be fruitful for accuracy and for computational efficiency as well.
+* Plotting a classification report gave a lot of insight as to what was going on under the hood. At this point future improvements would require focused problem solving. For example, much of the error was due to misclassification of classes "Dangerous Curve To The Right", , "Double Curves", "Traffic Signals", "Pedestrians" and "Beware of ice/snow". Their similarity is eye-catching: a vertical blob in a triangular frame. Colored channels might help the recognition of "Traffic Signals", sharpening the edges might help the rest. 
 
-If a well known architecture was chosen:
-* What architecture was chosen?
-* Why did you believe it would be relevant to the traffic sign application?
-* How does the final model's accuracy on the training, validation and test set provide evidence that the model is working well?
- 
+### 4. Test a Model on New Images
 
-### Test a Model on New Images
+#### 4.1. Acquiring New Images
 
-#### 1. Choose five German traffic signs found on the web and provide them in the report. For each image, discuss what quality or qualities might be difficult to classify.
+I went beyond and downloaded 1 additional example from the web for all the defined classes, 43 images altogether. I tried to include a variety of different qualities, although the process of finding exactly the same type of traffic sign images turned out to be a gruesome task. Many times the sizes and style of symbols are inconsistent with our dataset, or are just presented out of context.
 
-Here are five German traffic signs that I found on the web:
+Here are a few examples:
 
-![alt text][image4] ![alt text][image5] ![alt text][image6] 
-![alt text][image7] ![alt text][image8]
+![alt text][image11]
 
-The first image might be difficult to classify because ...
+And here are the examples after preprocessing:
 
-#### 2. Discuss the model's predictions on these new traffic signs and compare the results to predicting on the test set. At a minimum, discuss what the predictions were, the accuracy on these new predictions, and compare the accuracy to the accuracy on the test set (OPTIONAL: Discuss the results in more detail as described in the "Stand Out Suggestions" part of the rubric).
+![alt text][image12]
+
+#### 4.2. Performance on New Images
 
 Here are the results of the prediction:
 
-| Image			        |     Prediction	        					| 
-|:---------------------:|:---------------------------------------------:| 
-| Stop Sign      		| Stop sign   									| 
-| U-turn     			| U-turn 										|
-| Yield					| Yield											|
-| 100 km/h	      		| Bumpy Road					 				|
-| Slippery Road			| Slippery Road      							|
+| Id	| Result  |              Label               |         Prediction      |
+|:--:|:-------:|:--------------------------------:|:-----------------------:| 
+ 0 |  True |                Speed limit (20km/h)  |  Speed limit (20km/h)
+ 1 | False |                Speed limit (30km/h)  |  Speed limit (20km/h)
+ 2 |  True |    No passing for vehicles over 3.5  |  No passing for vehicles over 3.5
+ 3 |  True |    Right-of-way at the next interse  |  Right-of-way at the next interse
+ 4 |  True |                       Priority road  |  Priority road
+ 5 |  True |                               Yield  |  Yield
+ 6 |  True |                                Stop  |  Stop
+ 7 |  True |                         No vehicles  |  No vehicles
+ 8 |  True |    Vehicles over 3.5 metric tons pr  |  Vehicles over 3.5 metric tons pr
+ 9 |  True |                            No entry  |  No entry
+10 |  True |                     General caution  |  General caution
+11 |  True |         Dangerous curve to the left  |  Dangerous curve to the left
+12 |  True |                Speed limit (50km/h)  |  Speed limit (50km/h)
+13 |  True |        Dangerous curve to the right  |  Dangerous curve to the right
+14 |  True |                        Double curve  |  Double curve
+15 |  True |                          Bumpy road  |  Bumpy road
+16 |  True |                       Slippery road  |  Slippery road
+17 |  True |           Road narrows on the right  |  Road narrows on the right
+18 |  True |                           Road work  |  Road work
+19 |  True |                     Traffic signals  |  Traffic signals
+20 | False |                         Pedestrians  |  Road narrows on the right
+21 |  True |                   Children crossing  |  Children crossing
+22 | False |                   Bicycles crossing  |  Slippery road
+23 |  True |                Speed limit (60km/h)  |  Speed limit (60km/h)
+24 |  True |                  Beware of ice/snow  |  Beware of ice/snow
+25 | False |               Wild animals crossing  |  Slippery road
+26 | False |    End of all speed and passing lim  |  End of speed limit (80km/h)
+27 |  True |                    Turn right ahead  |  Turn right ahead
+28 | False |                     Turn left ahead  |  Speed limit (20km/h)
+29 |  True |                          Ahead only  |  Ahead only
+30 |  True |                Go straight or right  |  Go straight or right
+31 |  True |                 Go straight or left  |  Go straight or left
+32 |  True |                          Keep right  |  Keep right
+33 |  True |                           Keep left  |  Keep left
+34 |  True |                Speed limit (70km/h)  |  Speed limit (70km/h)
+35 | False |                Roundabout mandatory  |  Keep left
+36 |  True |                   End of no passing  |  End of no passing
+37 | False |    End of no passing by vehicles ov  |  Roundabout mandatory
+38 |  True |                Speed limit (80km/h)  |  Speed limit (80km/h)
+39 | False |         End of speed limit (80km/h)  |  Children crossing
+40 |  True |               Speed limit (100km/h)  |  Speed limit (100km/h)
+41 | False |               Speed limit (120km/h)  |  Speed limit (80km/h)
+42 | False |                          No passing  |  Vehicles over 3.5 metric tons pr
 
+The accuracy on the new images is 0.744 which falls short compared to the 0.933 accuracy on the test set. The difference might be caused by the manual selection of the web images, as some of them might not live up to the german traffic sign standards. Moreover many of the images appear in front of a white background, which is also something not encountered in the training set.
 
-The model was able to correctly guess 4 of the 5 traffic signs, which gives an accuracy of 80%. This compares favorably to the accuracy on the test set of ...
+#### 4.3. Model Certainty - Softmax Probabilities
 
-#### 3. Describe how certain the model is when predicting on each of the five new images by looking at the softmax probabilities for each prediction. Provide the top 5 softmax probabilities for each image along with the sign type of each probability. (OPTIONAL: as described in the "Stand Out Suggestions" part of the rubric, visualizations can also be provided such as bar charts)
+Describe how certain the model is when predicting on each of the five new images by looking at the softmax probabilities for each prediction. Provide the top 5 softmax probabilities for each image along with the sign type of each probability. (OPTIONAL: as described in the "Stand Out Suggestions" part of the rubric, visualizations can also be provided such as bar charts)
 
-The code for making predictions on my final model is located in the 11th cell of the Ipython notebook.
+It is worthwhile to look at the specific softmax probabilities behind each prediction. Here are some interesting examples:
 
-For the first image, the model is relatively sure that this is a stop sign (probability of 0.6), and the image does contain a stop sign. The top five soft max probabilities were
+![alt text][image13]
 
-| Probability         	|     Prediction	        					| 
-|:---------------------:|:---------------------------------------------:| 
-| .60         			| Stop sign   									| 
-| .20     				| U-turn 										|
-| .05					| Yield											|
-| .04	      			| Bumpy Road					 				|
-| .01				    | Slippery Road      							|
+12% probability on the matching label is a fairly good result here. Competing are some reasonably similar looking alternatives.
 
+![alt text][image14]
 
-For the second image ... 
+12% for the yield sign, and all the other probabilities drop to 3%, the yield sign is easily recognizable due to its spectacular shape.
+
+![alt text][image15]
+
+12% is a failed prediction for pedestrian type, the competitors are almost all vertical blobs in a triangle.
+
+![alt text][image16]
+
+This image failed to trigger a significant response from any classes. 
+
+![alt text][image17]
+
+The speed limit predictions are almost accurate here, but the number 120 is missing. 
 
 ### (Optional) Visualizing the Neural Network (See Step 4 of the Ipython notebook for more details)
 #### 1. Discuss the visual output of your trained network's feature maps. What characteristics did the neural network use to make classifications?
 
+If we plot the response of different layers to an example image, we might get more insight about how is a class recognized. Here is my model's response to the "End of all limits" sign.
 
+![alt text][image18]
+
+On the first layer responses, we can see that some neurons focused on the white areas of the sign, and some focused on the diagonal edges of the black band.
+
+![alt text][image19]
+
+On the second layer responses, the same aspects can be seen, more specifically zoomed in on some details.
+
+![alt text][image20]
+
+On the third layer, the same tendency continues with a lower and lower resolution, but greater depth.
